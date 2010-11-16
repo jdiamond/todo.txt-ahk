@@ -1,0 +1,10 @@
+Update and delete items.
+Add Context combo box.
+Add Filter text box.
+Add Archive button to move checked items to done.txt.
+Be able to switch view from todo.txt to done.txt.
+Figure out how to support adding priorities to items.
+Add columns for done time and due time?
+Add button to open todo.txt in your favorite editor.
+Add support for a separate config file? Maybe todo.ini?
+Create GitHub repository.
