@@ -7,4 +7,4 @@ Figure out how to support adding priorities to items.
 Add columns for done time and due time?
 Add button to open todo.txt in your favorite editor.
 Add support for a separate config file? Maybe todo.ini?
-Create GitHub repository.
+x 2010-11-15 Create GitHub repository.
