@@ -1,5 +1,5 @@
 Update and delete items.
-Add Context combo box.
+x 2010-11-17 Add Context combo box.
 Add Filter text box.
 Add Archive button to move checked items to done.txt.
 Be able to switch view from todo.txt to done.txt.
