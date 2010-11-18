@@ -33,6 +33,7 @@ OK_BUTTON_TEXT := "OK"
 
 CONTROL_WIDTH := 400
 
+UPDATE_PROMPT := "What do you want to change ""`%text`%"" to?"
 DELETE_PROMPT := "Are you sure you want to delete ""`%text`%""?"
 
 ; Set our icon.
@@ -100,11 +101,11 @@ Return
 
 ; Handle when an item is selected in the context menu.
 MenuHandler:
-selectedRow := LV_GetNext()
+rowNumber := LV_GetNext()
 If (A_ThisMenuItem = "Update")
-  MsgBox You want to UPDATE row %selectedRow%!
+  UpdateItem(rowNumber)
 Else If (A_ThisMenuItem = "Delete")
-  DeleteItem(selectedRow)
+  DeleteItem(rowNumber)
 Return
 
 ; Handle when the X is clicked or when the ESCAPE key is pressed.
@@ -243,17 +244,12 @@ AddItem(newItem, context, project) {
 
 ; Check or uncheck an item in todo.txt.
 CheckItem(rowNumber, checked) {
-  Global TEXT_COLUMN
-  Global CONTEXT_COLUMN
-  Global PROJECT_COLUMN
-
-  LV_GetText(text, rowNumber, TEXT_COLUMN)
-  LV_GetText(context, rowNumber, CONTEXT_COLUMN)
-  LV_GetText(project, rowNumber, PROJECT_COLUMN)
+  GetPartsFromRow(rowNumber, text, context, project)
 
   UpdateFile("CheckItemAction", checked, text, context, project)
 }
 
+; Action for CheckItem.
 CheckItemAction(checked, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart) {
   If (checked) {
     If (donePart = "")
@@ -263,15 +259,32 @@ CheckItemAction(checked, ByRef donePart, ByRef textPart, ByRef contextPart, ByRe
   }
 }
 
+; Change the text of an item.
+UpdateItem(rowNumber) {
+  Global UPDATE_PROMPT
+
+  GetPartsFromRow(rowNumber, text, context, project)
+
+  StringReplace prompt, UPDATE_PROMPT, `%text`%, %text%
+  InputBox newText,, %prompt%
+
+  If ErrorLevel
+    Return
+
+  UpdateFile("UpdateItemAction", newText, text, context, project)
+  FilterItems()
+}
+
+; Action for UpdateItem.
+UpdateItemAction(newText, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart) {
+  textPart := newText
+}
+
+; Delete an item.
 DeleteItem(rowNumber) {
-  Global TEXT_COLUMN
-  Global CONTEXT_COLUMN
-  Global PROJECT_COLUMN
   Global DELETE_PROMPT
 
-  LV_GetText(text, rowNumber, TEXT_COLUMN)
-  LV_GetText(context, rowNumber, CONTEXT_COLUMN)
-  LV_GetText(project, rowNumber, PROJECT_COLUMN)
+  GetPartsFromRow(rowNumber, text, context, project)
 
   StringReplace prompt, DELETE_PROMPT, `%text`%, %text%
   MsgBox 4,, %prompt%
@@ -280,15 +293,26 @@ DeleteItem(rowNumber) {
     Return
 
   UpdateFile("DeleteItemAction", 0, text, context, project)
-
   FilterItems()
 }
 
+; Action for DeleteItem.
 DeleteItemAction(data, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart) {
   donePart := ""
   textPart := ""
   contextPart := ""
   projectPart := ""
+}
+
+; Gets the text, context, and project for the specified row.
+GetPartsFromRow(rowNumber, ByRef text, ByRef context, ByRef project) {
+  Global TEXT_COLUMN
+  Global CONTEXT_COLUMN
+  Global PROJECT_COLUMN
+
+  LV_GetText(text, rowNumber, TEXT_COLUMN)
+  LV_GetText(context, rowNumber, CONTEXT_COLUMN)
+  LV_GetText(project, rowNumber, PROJECT_COLUMN)
 }
 
 ; Generic function for updating items in todo.txt.
