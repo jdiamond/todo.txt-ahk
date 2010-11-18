@@ -30,6 +30,7 @@ PROJECT_HEADER := "Project"
 LINE_NUMBER_HEADER := "Line #"
 
 OK_BUTTON_TEXT := "OK"
+ARCHIVE_BUTTON_TEXT := "Archive"
 
 CONTROL_WIDTH := 400
 
@@ -49,7 +50,8 @@ Gui Add, Edit, vNewItem ym W%CONTROL_WIDTH%
 Gui Add, ComboBox, vContext gContext W%CONTROL_WIDTH% Sort, %ALL_TEXT%||%NONE_TEXT%
 Gui Add, ComboBox, vProject gProject W%CONTROL_WIDTH% Sort, %ALL_TEXT%||%NONE_TEXT%
 Gui Add, ListView, vItems gItems Checked W%CONTROL_WIDTH%, %CHECK_HEADER%|%TEXT_HEADER%|%CONTEXT_HEADER%|%PROJECT_HEADER%|%LINE_NUMBER_HEADER%
-Gui Add, Button, default, %OK_BUTTON_TEXT%
+Gui Add, Button, Default Section, %OK_BUTTON_TEXT%
+Gui Add, Button, gArchive ys, %ARCHIVE_BUTTON_TEXT%
 
 ; Define the context menu.
 Menu ItemMenu, Add, Update, MenuHandler
@@ -71,6 +73,11 @@ ButtonOK:
 Gui Submit
 AddItem(NewItem, Context, Project)
 GuiControl ,, NewItem,
+Return
+
+; Handle when the Archive button is clicked.
+Archive:
+ArchiveItems()
 Return
 
 ; Handle when the context combo box changes.
@@ -121,6 +128,7 @@ Anchor("Context", "w")
 Anchor("Project", "w")
 Anchor("Items", "wh")
 Anchor("OK", "y")
+Anchor("Archive", "y")
 Return
 
 ; Filters the items displayed in the list view.
@@ -315,15 +323,37 @@ GetPartsFromRow(rowNumber, ByRef text, ByRef context, ByRef project) {
   LV_GetText(project, rowNumber, PROJECT_COLUMN)
 }
 
+ArchiveItems() {
+  count := UpdateFile("ArchiveItemsAction", 0, "*", "", "")
+  FilterItems()
+  MsgBox Archived %count% items!
+}
+
+ArchiveItemsAction(data, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart) {
+  Global DONE_PATH
+
+  If (donePart <> "") {
+    line := MakeLine(donePart, textPart, contextPart, projectPart)
+    FileAppend %line%`n, %DONE_PATH%
+    DeleteItemAction(data, donePart, textPart, contextPart, projectPart)
+    Return true
+  }
+}
+
 ; Generic function for updating items in todo.txt.
 ; `action` is name of function to invoke for matching items.
 ; Function must have this signature:
 ;   MyAction(data, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart)
+; Function can return true to increment returned count.
 ; `data` is any value that `action` might need.
+; Only lines that match `text`, `context`, and `project` use `action`.
+; `text` can be "*" to invoke the action on all items.
+; Returns the count of times `action` returned true.
 UpdateFile(action, data, text, context, project) {
   Global TODO_PATH
   Global TODO_FILE_NAME
 
+  count := 0
   tempPath := A_Temp . "\" . TODO_FILE_NAME . ".tmp"
 
   FileDelete tempPath
@@ -337,8 +367,9 @@ UpdateFile(action, data, text, context, project) {
     } Else {
       ParseLine(line, donePart, textPart, contextPart, projectPart)
 
-      If (textPart = text And contextPart = context And projectPart = project) {
-        %action%(data, donePart, textPart, contextPart, projectPart)
+      If ((text = "*") Or (textPart = text And contextPart = context And projectPart = project)) {
+        If (%action%(data, donePart, textPart, contextPart, projectPart))
+          count := count + 1
       }
 
       line := MakeLine(donePart, textPart, contextPart, projectPart)
@@ -349,6 +380,8 @@ UpdateFile(action, data, text, context, project) {
 
   FileMove %tempPath%, %TODO_PATH%, 1
   FileDelete tempPath
+
+  Return count
 }
 
 ; Parse a line from todo.txt.
