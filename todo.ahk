@@ -1,11 +1,12 @@
 #Include Anchor.ahk
 
+INI_FILE_NAME := "todo.ini"
 TODO_FILE_NAME := "todo.txt"
 DONE_FILE_NAME := "done.txt"
 ICON_FILE_NAME := "todo.ico"
 
-TODO_PATH := A_ScriptDir . "\" . TODO_FILE_NAME
-DONE_PATH := A_ScriptDir . "\" . DONE_FILE_NAME
+TODO_PATH := GetPath("todo", TODO_FILE_NAME)
+DONE_PATH := GetPath("done", DONE_FILE_NAME)
 ICON_PATH := A_ScriptDir . "\" . ICON_FILE_NAME
 
 WINDOW_TITLE := "TODOs"
@@ -414,5 +415,30 @@ MakeLine(donePart, textPart, contextPart, projectPart) {
 ; Remove whitespace from the beginning and end of the string.
 TrimWhitespace(str) {
   Return RegExReplace(str, "(^\s+)|(\s+$)")
+}
+
+GetPath(key, default) {
+  Global INI_FILE_NAME
+
+  IniRead folder, %A_ScriptDir%\%INI_FILE_NAME%, Files, folder, %A_ScriptDir%
+  folder := ExpandEnvironmentStrings(folder)
+
+  IniRead value, %A_ScriptDir%\%INI_FILE_NAME%, Files, %key%, %default%
+  value := ExpandEnvironmentStrings(value)
+
+  If (IsAbsolute(value))
+    Return value
+
+  Return folder . "\" . value
+}
+
+ExpandEnvironmentStrings(str) {
+   VarSetCapacity(dest, 2000)
+   DllCall("ExpandEnvironmentStrings", "str", str, "str", dest, int, 1999, "Cdecl int")
+   Return dest
+}
+
+IsAbsolute(path) {
+  Return RegExMatch(path, "(^[a-zA-Z]:\\)|(^\\\\)") > 0
 }
 
