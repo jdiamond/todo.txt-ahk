@@ -275,7 +275,7 @@ UpdateItem(rowNumber) {
   GetPartsFromRow(rowNumber, text, context, project)
 
   StringReplace prompt, UPDATE_PROMPT, `%text`%, %text%
-  InputBox newText,, %prompt%
+  InputBox newText,, %prompt%,,,,,,,, %text%
 
   If ErrorLevel
     Return
