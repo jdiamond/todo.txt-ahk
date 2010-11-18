@@ -1,5 +1,10 @@
 An AutoHotKey GUI for working with todo.txt files.
 
+For information about todo.txt files, see http://todotxt.com/.
+
+This script tries to be compatible with todo.txt files produced by the todo.sh
+script found here: https://github.com/ginatrapani/todo.txt-cli.
+
 To use this, you need to be running Windows with AutoHotKey installed. Just
 double-click todo.ahk to start the script. You should see a green checkmark in
 your system tray which tells you that it's running.
