@@ -33,6 +33,8 @@ OK_BUTTON_TEXT := "OK"
 
 CONTROL_WIDTH := 400
 
+DELETE_PROMPT := "Are you sure you want to delete ""`%text`%""?"
+
 ; Set our icon.
 Menu TRAY, Icon, %ICON_PATH%
 
@@ -102,7 +104,7 @@ selectedRow := LV_GetNext()
 If (A_ThisMenuItem = "Update")
   MsgBox You want to UPDATE row %selectedRow%!
 Else If (A_ThisMenuItem = "Delete")
-  MsgBox You want to DELETE row %selectedRow%!
+  DeleteItem(selectedRow)
 Return
 
 ; Handle when the X is clicked or when the ESCAPE key is pressed.
@@ -241,13 +243,62 @@ AddItem(newItem, context, project) {
 
 ; Check or uncheck an item in todo.txt.
 CheckItem(rowNumber, checked) {
-  Global TODO_PATH
-  Global TODO_FILE_NAME
   Global TEXT_COLUMN
+  Global CONTEXT_COLUMN
   Global PROJECT_COLUMN
 
   LV_GetText(text, rowNumber, TEXT_COLUMN)
+  LV_GetText(context, rowNumber, CONTEXT_COLUMN)
   LV_GetText(project, rowNumber, PROJECT_COLUMN)
+
+  UpdateFile("CheckItemAction", checked, text, context, project)
+}
+
+CheckItemAction(checked, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart) {
+  If (checked) {
+    If (donePart = "")
+      donePart := "x " . A_YYYY . "-" . A_MM . "-" . A_DD
+  } Else {
+    donePart := ""
+  }
+}
+
+DeleteItem(rowNumber) {
+  Global TEXT_COLUMN
+  Global CONTEXT_COLUMN
+  Global PROJECT_COLUMN
+  Global DELETE_PROMPT
+
+  LV_GetText(text, rowNumber, TEXT_COLUMN)
+  LV_GetText(context, rowNumber, CONTEXT_COLUMN)
+  LV_GetText(project, rowNumber, PROJECT_COLUMN)
+
+  StringReplace prompt, DELETE_PROMPT, `%text`%, %text%
+  MsgBox 4,, %prompt%
+
+  IfMsgBox No
+    Return
+
+  UpdateFile("DeleteItemAction", 0, text, context, project)
+
+  FilterItems()
+}
+
+DeleteItemAction(data, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart) {
+  donePart := ""
+  textPart := ""
+  contextPart := ""
+  projectPart := ""
+}
+
+; Generic function for updating items in todo.txt.
+; `action` is name of function to invoke for matching items.
+; Function must have this signature:
+;   MyAction(data, ByRef donePart, ByRef textPart, ByRef contextPart, ByRef projectPart)
+; `data` is any value that `action` might need.
+UpdateFile(action, data, text, context, project) {
+  Global TODO_PATH
+  Global TODO_FILE_NAME
 
   tempPath := A_Temp . "\" . TODO_FILE_NAME . ".tmp"
 
@@ -262,13 +313,8 @@ CheckItem(rowNumber, checked) {
     } Else {
       ParseLine(line, donePart, textPart, contextPart, projectPart)
 
-      If (textPart = text And projectPart = project) {
-        If (checked) {
-          If (donePart = "")
-            donePart := "x " . A_YYYY . "-" . A_MM . "-" . A_DD
-        } Else {
-          donePart := ""
-        }
+      If (textPart = text And contextPart = context And projectPart = project) {
+        %action%(data, donePart, textPart, contextPart, projectPart)
       }
 
       line := MakeLine(donePart, textPart, contextPart, projectPart)

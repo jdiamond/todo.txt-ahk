@@ -1,4 +1,5 @@
-Update and delete items.
+Update items.
+x 2010-11-17 Delete items.
 x 2010-11-17 Add Context combo box.
 Add Filter text box.
 Add Archive button to move checked items to done.txt.
