@@ -47,7 +47,7 @@ CONTEXT_HEADER := "Context"
 PROJECT_HEADER := "Project"
 LINE_NUMBER_HEADER := "Line #"
 
-OK_BUTTON_TEXT := "OK"
+ADD_BUTTON_TEXT := "Add"
 ARCHIVE_BUTTON_TEXT := "Archive"
 
 CONTROL_WIDTH := 400
@@ -68,7 +68,7 @@ Gui Add, Edit, vNewItem ym W%CONTROL_WIDTH%
 Gui Add, ComboBox, vContext gContext W%CONTROL_WIDTH% Sort, %ALL_TEXT%||%NONE_TEXT%
 Gui Add, ComboBox, vProject gProject W%CONTROL_WIDTH% Sort, %ALL_TEXT%||%NONE_TEXT%
 Gui Add, ListView, vItems gItems Checked W%CONTROL_WIDTH%, %CHECK_HEADER%|%TEXT_HEADER%|%CONTEXT_HEADER%|%PROJECT_HEADER%|%LINE_NUMBER_HEADER%
-Gui Add, Button, Default Section, %OK_BUTTON_TEXT%
+Gui Add, Button, Default Section, %ADD_BUTTON_TEXT%
 Gui Add, Button, gArchive ys, %ARCHIVE_BUTTON_TEXT%
 
 ; Define the context menu.
@@ -88,9 +88,15 @@ Return
 
 ; Handle when the OK button is clicked or the ENTER key is pressed.
 ButtonOK:
-Gui Submit
+Gui Submit, NoHide
 AddItem(NewItem, Context, Project)
+; Clear the NewItem edit box.
 GuiControl ,, NewItem,
+If !!GetConfig("UI", "CloseAfterAdding", false) {
+  Gui Cancel
+} Else {
+  FilterItems()
+}
 Return
 
 ; Handle when the Archive button is clicked.
@@ -435,18 +441,22 @@ TrimWhitespace(str) {
 }
 
 GetPath(key, default) {
-  Global INI_FILE_NAME
-
-  IniRead folder, %A_ScriptDir%\%INI_FILE_NAME%, Files, folder, %A_ScriptDir%
+  folder := GetConfig("Files", "Folder", A_ScriptDir)
   folder := ExpandEnvironmentStrings(folder)
 
-  IniRead value, %A_ScriptDir%\%INI_FILE_NAME%, Files, %key%, %default%
+  value := GetConfig("Files", key, default)
   value := ExpandEnvironmentStrings(value)
 
   If (IsAbsolute(value))
     Return value
 
   Return folder . "\" . value
+}
+
+GetConfig(section, key, default) {
+  Global INI_FILE_NAME
+  IniRead value, %A_ScriptDir%\%INI_FILE_NAME%, %section%, %key%, %default%
+  return value
 }
 
 ExpandEnvironmentStrings(str) {

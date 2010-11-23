@@ -1,21 +1,26 @@
 ; Rename this file to todo.ini and put it in the script folder.
 
+[UI]
+; Set this to 1 to close after adding an item.
+; Set it to 0 (the default) to keep the GUI open.
+CloseAfterAdding=1
+
 [Files]
 
 ; Specify the default folder to hold the files.
 ; If this is not set, it defaults to the script folder.
 ; It can contain environmental variable references.
 ; It should not end with a \.
-folder=%appdata%
+Folder=%appdata%
 
 ; The name of the todo.txt file.
 ; If this is relative, it's relative to the default folder (above).
 ; If it's absolute (starts with somethig like C:\ or \\), the default
 ; folder is ignored.
 ; It can also contain references to environmental variables.
-todo=mytodo.txt
+Todo=mytodo.txt
 
 ; The name of the done.txt file.
 ; This follows the same rules as todo (above).
-done=mydone.txt
+Done=mydone.txt
 
