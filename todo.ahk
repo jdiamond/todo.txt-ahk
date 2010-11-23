@@ -68,7 +68,7 @@ Gui Add, Edit, vNewItem ym W%CONTROL_WIDTH%
 Gui Add, ComboBox, vContext gContext W%CONTROL_WIDTH% Sort, %ALL_TEXT%||%NONE_TEXT%
 Gui Add, ComboBox, vProject gProject W%CONTROL_WIDTH% Sort, %ALL_TEXT%||%NONE_TEXT%
 Gui Add, ListView, vItems gItems Checked W%CONTROL_WIDTH%, %CHECK_HEADER%|%TEXT_HEADER%|%CONTEXT_HEADER%|%PROJECT_HEADER%|%LINE_NUMBER_HEADER%
-Gui Add, Button, Default Section, %ADD_BUTTON_TEXT%
+Gui Add, Button, vAdd gAdd Default Section, %ADD_BUTTON_TEXT%
 Gui Add, Button, gArchive ys, %ARCHIVE_BUTTON_TEXT%
 
 ; Define the context menu.
@@ -87,7 +87,7 @@ ReadFile(Context, Project, true)
 Return
 
 ; Handle when the OK button is clicked or the ENTER key is pressed.
-ButtonOK:
+Add:
 Gui Submit, NoHide
 AddItem(NewItem, Context, Project)
 ; Clear the NewItem edit box.
@@ -151,7 +151,7 @@ Anchor("NewItem", "w")
 Anchor("Context", "w")
 Anchor("Project", "w")
 Anchor("Items", "wh")
-Anchor("OK", "y")
+Anchor("Add", "y")
 Anchor("Archive", "y")
 Return
 
