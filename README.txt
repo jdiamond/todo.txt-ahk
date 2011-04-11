@@ -9,6 +9,10 @@ To use this, you need to be running Windows with AutoHotKey installed. Just
 double-click todo.ahk to start the script. You should see a green checkmark in
 your system tray which tells you that it's running.
 
+Alternatively, you can download the compiled version from the download page
+here: https://github.com/jdiamond/todo.txt-ahk. You shouldn't need AutoHotKey
+installed if you use this.
+
 By default, it expects the todo.txt file to be in the same folder as the
 script. You can change this by reading todo.ini.example and following its
 instructions.
